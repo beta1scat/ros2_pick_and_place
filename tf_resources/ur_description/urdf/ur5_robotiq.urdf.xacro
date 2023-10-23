@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<robot name="ur5" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ur5 -->
+  <xacro:include filename="$(find tf_resources_ur_description)/urdf/ur5.urdf.xacro"/>
+  <!-- arm -->
+  <xacro:ur5_robot/>
+
+  <!-- robotiq -->
+  <xacro:include filename="$(find tf_resources_robotiq)/urdf/robotiq_85_gripper.urdf.xacro" />
+  <!-- gripper -->  
+  <xacro:robotiq_85_gripper prefix="" parent="ee_link" >
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:robotiq_85_gripper>
+  
+  <!-- gazebo -->
+  <xacro:include filename="$(find tf_resources_ur_description)/urdf/ur5_robotiq.gazebo.xacro"/>
+
+  <!-- ros2_control -->
+  <xacro:include filename="$(find tf_resources_ur_description)/urdf/ur5_robotiq.ros2_control.xacro"/>
+  
+</robot>

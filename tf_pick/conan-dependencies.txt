@@ -1,0 +1,12 @@
+[requires]
+common/0.3.0@TFTech/develop
+surface_matching_cpu/0.6.0@TFTech/develop
+point_cloud_utils/0.1.2@TFTech/develop
+
+
+[generators]
+cmake
+
+[imports]
+include, * -> ./library/include
+lib, * -> ./library/lib

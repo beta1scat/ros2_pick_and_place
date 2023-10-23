@@ -1,0 +1,25 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz
+
+    joint_trajectory_controller2:
+      type: effort_controllers/JointGroupEffortController
+
+joint_trajectory_controller2:
+  ros__parameters:
+    joints:
+      - gripper_finger1_joint
+      - gripper_finger2_joint
+      - gripper_finger1_inner_knuckle_joint
+      - gripper_finger2_inner_knuckle_joint
+      - gripper_finger1_finger_tip_joint
+      - gripper_finger2_finger_tip_joint
+      - vacuum_gripper_joint
+    command_interfaces:
+      - effort
+    state_interfaces:
+      - position
+      - velocity
+      - effort
+    state_publish_rate: 50.0
+    action_monitor_rate: 20.0

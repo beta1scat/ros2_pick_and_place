@@ -1,0 +1,20 @@
+{
+    "modelPath": "/home/niu/code/surface_matching_cpu-example/data/cylinder-model.ply",
+    "scenePath": "/home/niu/code/surface_matching_cpu-example/data/sceneWithoutROIInRobot.ply",
+    "pickPointsPath":"/home/niu/ws_ros2/src/tf_pick/data/pick_points_new.json",
+    "pickPointPlannerPath":"/home/niu/ws_ros2/src/tf_pick/data/pick_point_planner_config_new.json",
+    
+    "config": {
+        "distanceDiscreteNum": 20,
+        "angleDiscreteNum": 30,
+        "referencePointStep": 5,
+        "maxRelativeOverlapDistance": 0.3,
+        "minScore": 0.15,
+        "icpMaxIterationStep": 20,
+        "icpMaxRelativeCorrespondenceDistance": 1.0,
+        "icpRelativeConvergenceThreshold": 0.4,
+        "angleRelativeDifferenceThreshold": 1.0,
+        "distanceRelativeDifferenceThreshold": 1.0,
+        "voteNumRelativeThreshold": 0.06
+    }
+}

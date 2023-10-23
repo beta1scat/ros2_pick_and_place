@@ -1,0 +1,173 @@
+[moveit_cpp-7] [INFO] [1648261773.552718924] [moveit_cpp]: pose in camera 0:
+[moveit_cpp-7] [INFO] [1648261773.552766814] [moveit_cpp]:   + position:
+[moveit_cpp-7] [INFO] [1648261773.552779999] [moveit_cpp]:     - x = -0.110748
+[moveit_cpp-7] [INFO] [1648261773.552795490] [moveit_cpp]:     - y = -0.083154
+[moveit_cpp-7] [INFO] [1648261773.552807781] [moveit_cpp]:     - z = 1.182120
+[moveit_cpp-7] [INFO] [1648261773.552820164] [moveit_cpp]:   + orientation:
+[moveit_cpp-7] [INFO] [1648261773.552830702] [moveit_cpp]:     - x = 0.660319
+[moveit_cpp-7] [INFO] [1648261773.552843199] [moveit_cpp]:     - y = 0.495718
+[moveit_cpp-7] [INFO] [1648261773.552855892] [moveit_cpp]:     - z = -0.494282
+[moveit_cpp-7] [INFO] [1648261773.552867727] [moveit_cpp]:     - w = 0.271897
+[moveit_cpp-7] [INFO] [1648261773.552880837] [moveit_cpp]: rotation:
+[moveit_cpp-7] [INFO] [1648261773.552893022] [moveit_cpp]:   - x = 0.660319
+[moveit_cpp-7] [INFO] [1648261773.552905913] [moveit_cpp]:   - y = 0.495718
+[moveit_cpp-7] [INFO] [1648261773.552918886] [moveit_cpp]:   - z = 0.660319
+[moveit_cpp-7] [INFO] [1648261773.552931825] [moveit_cpp]:   - w = 0.271897
+[moveit_cpp-7] [INFO] [1648261773.553023698] [moveit_cpp]: pose in world 0:
+[moveit_cpp-7] [INFO] [1648261773.553048609] [moveit_cpp]:   + position:
+[moveit_cpp-7] [INFO] [1648261773.553061251] [moveit_cpp]:     - x = 0.383154
+[moveit_cpp-7] [INFO] [1648261773.553075576] [moveit_cpp]:     - y = -0.139252
+[moveit_cpp-7] [INFO] [1648261773.553089447] [moveit_cpp]:     - z = -0.182120
+[moveit_cpp-7] [INFO] [1648261773.553103494] [moveit_cpp]:   + orientation:
+[moveit_cpp-7] [INFO] [1648261773.553164917] [moveit_cpp]:     - x = 0.541771
+[moveit_cpp-7] [INFO] [1648261773.553185714] [moveit_cpp]:     - y = 0.157250
+[moveit_cpp-7] [INFO] [1648261773.553199547] [moveit_cpp]:     - z = 0.817441
+[moveit_cpp-7] [INFO] [1648261773.553212769] [moveit_cpp]:     - w = -0.116391
+
+
+
+[INFO] [1648261770.993689638] [minimal_subscriber]: pose in camera 0:
+[INFO] [1648261770.993802619] [minimal_subscriber]:   + position:
+[INFO] [1648261770.993819318] [minimal_subscriber]:     - x = -0.110748
+[INFO] [1648261770.993833594] [minimal_subscriber]:     - y = -0.083154
+[INFO] [1648261770.993844539] [minimal_subscriber]:     - z = 1.182120
+[INFO] [1648261770.993891338] [minimal_subscriber]:   + orientation:
+[INFO] [1648261770.993911926] [minimal_subscriber]:     - x = 0.660319
+[INFO] [1648261770.993935093] [minimal_subscriber]:     - y = 0.495718
+[INFO] [1648261770.993961078] [minimal_subscriber]:     - z = -0.494282
+[INFO] [1648261770.993972320] [minimal_subscriber]:     - w = 0.271897
+[INFO] [1648261770.993989826] [minimal_subscriber]: pose in camera 1:
+[INFO] [1648261770.994006685] [minimal_subscriber]:   + position:
+[INFO] [1648261770.994017091] [minimal_subscriber]:     - x = -0.145244
+[INFO] [1648261770.994030137] [minimal_subscriber]:     - y = -0.103901
+[INFO] [1648261770.994055843] [minimal_subscriber]:     - z = 1.175530
+[INFO] [1648261770.994069414] [minimal_subscriber]:   + orientation:
+[INFO] [1648261770.994088516] [minimal_subscriber]:     - x = -0.710255
+[INFO] [1648261770.994100844] [minimal_subscriber]:     - y = -0.275164
+[INFO] [1648261770.994129293] [minimal_subscriber]:     - z = 0.646350
+[INFO] [1648261770.994194570] [minimal_subscriber]:     - w = 0.045329
+[INFO] [1648261770.994228468] [minimal_subscriber]: pose in camera 2:
+[INFO] [1648261770.994239344] [minimal_subscriber]:   + position:
+[INFO] [1648261770.994249039] [minimal_subscriber]:     - x = 0.056462
+[INFO] [1648261770.994259933] [minimal_subscriber]:     - y = -0.001815
+[INFO] [1648261770.994275156] [minimal_subscriber]:     - z = 1.176840
+[INFO] [1648261770.994290858] [minimal_subscriber]:   + orientation:
+[INFO] [1648261770.994305497] [minimal_subscriber]:     - x = -0.743061
+[INFO] [1648261770.994322939] [minimal_subscriber]:     - y = -0.613287
+[INFO] [1648261770.994341278] [minimal_subscriber]:     - z = -0.015445
+[INFO] [1648261770.994358066] [minimal_subscriber]:     - w = 0.267395
+[INFO] [1648261770.994369560] [minimal_subscriber]: pose in camera 3:
+[INFO] [1648261770.994379656] [minimal_subscriber]:   + position:
+[INFO] [1648261770.994395774] [minimal_subscriber]:     - x = -0.019464
+[INFO] [1648261770.994414423] [minimal_subscriber]:     - y = -0.098533
+[INFO] [1648261770.994428587] [minimal_subscriber]:     - z = 1.176125
+[INFO] [1648261770.994445450] [minimal_subscriber]:   + orientation:
+[INFO] [1648261770.994462559] [minimal_subscriber]:     - x = -0.190749
+[INFO] [1648261770.994475742] [minimal_subscriber]:     - y = 0.662902
+[INFO] [1648261770.994486518] [minimal_subscriber]:     - z = -0.101477
+[INFO] [1648261770.994496891] [minimal_subscriber]:     - w = 0.716853
+[INFO] [1648261770.994507134] [minimal_subscriber]: pose in camera 4:
+[INFO] [1648261770.994517075] [minimal_subscriber]:   + position:
+[INFO] [1648261770.994526333] [minimal_subscriber]:     - x = -0.078619
+[INFO] [1648261770.994537059] [minimal_subscriber]:     - y = 0.001025
+[INFO] [1648261770.994548093] [minimal_subscriber]:     - z = 1.182749
+[INFO] [1648261770.994558757] [minimal_subscriber]:   + orientation:
+[INFO] [1648261770.994569092] [minimal_subscriber]:     - x = -0.108412
+[INFO] [1648261770.994580266] [minimal_subscriber]:     - y = 0.773801
+[INFO] [1648261770.994590859] [minimal_subscriber]:     - z = -0.008737
+[INFO] [1648261770.994601591] [minimal_subscriber]:     - w = 0.624021
+[INFO] [1648261770.994612514] [minimal_subscriber]: pose in camera 5:
+[INFO] [1648261770.994622487] [minimal_subscriber]:   + position:
+[INFO] [1648261770.994631919] [minimal_subscriber]:     - x = 0.069717
+[INFO] [1648261770.994690307] [minimal_subscriber]:     - y = 0.047051
+[INFO] [1648261770.994706896] [minimal_subscriber]:     - z = 1.182540
+[INFO] [1648261770.994718321] [minimal_subscriber]:   + orientation:
+[INFO] [1648261770.994728147] [minimal_subscriber]:     - x = 0.344343
+[INFO] [1648261770.994738826] [minimal_subscriber]:     - y = 0.607362
+[INFO] [1648261770.994749505] [minimal_subscriber]:     - z = -0.428851
+[INFO] [1648261770.994760011] [minimal_subscriber]:     - w = 0.573259
+[INFO] [1648261770.994770530] [minimal_subscriber]: pose in camera 6:
+[INFO] [1648261770.994781031] [minimal_subscriber]:   + position:
+[INFO] [1648261770.994790527] [minimal_subscriber]:     - x = -0.151539
+[INFO] [1648261770.994801359] [minimal_subscriber]:     - y = 0.024569
+[INFO] [1648261770.994811630] [minimal_subscriber]:     - z = 1.175856
+[INFO] [1648261770.994822343] [minimal_subscriber]:   + orientation:
+[INFO] [1648261770.994832021] [minimal_subscriber]:     - x = 0.661661
+[INFO] [1648261770.994842722] [minimal_subscriber]:     - y = 0.727542
+[INFO] [1648261770.994853206] [minimal_subscriber]:     - z = 0.169620
+[INFO] [1648261770.994863643] [minimal_subscriber]:     - w = 0.064168
+[INFO] [1648261770.994874466] [minimal_subscriber]: pose in camera 7:
+[INFO] [1648261770.994885015] [minimal_subscriber]:   + position:
+[INFO] [1648261770.994895118] [minimal_subscriber]:     - x = -0.114398
+[INFO] [1648261770.994906859] [minimal_subscriber]:     - y = 0.030205
+[INFO] [1648261770.994918098] [minimal_subscriber]:     - z = 1.167088
+[INFO] [1648261770.994929289] [minimal_subscriber]:   + orientation:
+[INFO] [1648261770.994940124] [minimal_subscriber]:     - x = 0.130455
+[INFO] [1648261770.994951465] [minimal_subscriber]:     - y = 0.716928
+[INFO] [1648261770.994962052] [minimal_subscriber]:     - z = -0.679594
+[INFO] [1648261770.994972886] [minimal_subscriber]:     - w = 0.084541
+[INFO] [1648261770.994984689] [minimal_subscriber]: pose in camera 8:
+[INFO] [1648261770.994995406] [minimal_subscriber]:   + position:
+[INFO] [1648261770.995005382] [minimal_subscriber]:     - x = 0.163676
+[INFO] [1648261770.995017152] [minimal_subscriber]:     - y = 0.015560
+[INFO] [1648261770.995028403] [minimal_subscriber]:     - z = 1.169554
+[INFO] [1648261770.995039140] [minimal_subscriber]:   + orientation:
+[INFO] [1648261770.995049259] [minimal_subscriber]:     - x = -0.547660
+[INFO] [1648261770.995061403] [minimal_subscriber]:     - y = -0.426687
+[INFO] [1648261770.995073388] [minimal_subscriber]:     - z = 0.432874
+[INFO] [1648261770.995087475] [minimal_subscriber]:     - w = 0.575002
+
+
+[INFO] [1648262832.874922690] [minimal_subscriber]: pose in camera 0:
+[INFO] [1648262832.875007275] [minimal_subscriber]:   + position:
+[INFO] [1648262832.875021880] [minimal_subscriber]:     - x = 0.038644
+[INFO] [1648262832.875035076] [minimal_subscriber]:     - y = -0.011116
+[INFO] [1648262832.875045721] [minimal_subscriber]:     - z = 1.178470
+[INFO] [1648262832.875057154] [minimal_subscriber]:   + orientation:
+[INFO] [1648262832.875075963] [minimal_subscriber]:     - x = -0.016103
+[INFO] [1648262832.875091848] [minimal_subscriber]:     - y = 0.142343
+[INFO] [1648262832.875117311] [minimal_subscriber]:     - z = -0.954536
+[INFO] [1648262832.875131939] [minimal_subscriber]:     - w = 0.261419
+
+[moveit_cpp-7] [INFO] [1648262835.517662526] [moveit_cpp]: pose in camera 0:
+[moveit_cpp-7] [INFO] [1648262835.517707566] [moveit_cpp]:   + position:
+[moveit_cpp-7] [INFO] [1648262835.517716936] [moveit_cpp]:     - x = 0.038644
+[moveit_cpp-7] [INFO] [1648262835.517729365] [moveit_cpp]:     - y = -0.011116
+[moveit_cpp-7] [INFO] [1648262835.517737555] [moveit_cpp]:     - z = 1.178470
+[moveit_cpp-7] [INFO] [1648262835.517746260] [moveit_cpp]:   + orientation:
+[moveit_cpp-7] [INFO] [1648262835.517753285] [moveit_cpp]:     - x = -0.016103
+[moveit_cpp-7] [INFO] [1648262835.517761327] [moveit_cpp]:     - y = 0.142343
+[moveit_cpp-7] [INFO] [1648262835.517769445] [moveit_cpp]:     - z = -0.954536
+[moveit_cpp-7] [INFO] [1648262835.517777520] [moveit_cpp]:     - w = 0.261419
+[moveit_cpp-7] [INFO] [1648262835.517786181] [moveit_cpp]: rotation:
+[moveit_cpp-7] [INFO] [1648262835.517794284] [moveit_cpp]:   - x = -0.016103
+[moveit_cpp-7] [INFO] [1648262835.517802962] [moveit_cpp]:   - y = 0.142343
+[moveit_cpp-7] [INFO] [1648262835.517811128] [moveit_cpp]:   - z = -0.016103
+[moveit_cpp-7] [INFO] [1648262835.517819098] [moveit_cpp]:   - w = 0.261419
+[moveit_cpp-7] [INFO] [1648262835.517886383] [moveit_cpp]: pose in world 0:
+[moveit_cpp-7] [INFO] [1648262835.517900453] [moveit_cpp]:   + position:
+[moveit_cpp-7] [INFO] [1648262835.517908770] [moveit_cpp]:     - x = 1.478470
+[moveit_cpp-7] [INFO] [1648262835.517917947] [moveit_cpp]:     - y = -0.261116
+[moveit_cpp-7] [INFO] [1648262835.517926847] [moveit_cpp]:     - z = 0.961356
+[moveit_cpp-7] [INFO] [1648262835.517935169] [moveit_cpp]:   + orientation:
+[moveit_cpp-7] [INFO] [1648262835.518006680] [moveit_cpp]:     - x = 0.686345
+[moveit_cpp-7] [INFO] [1648262835.518043354] [moveit_cpp]:     - y = -0.285503
+[moveit_cpp-7] [INFO] [1648262835.518061869] [moveit_cpp]:     - z = 0.663573
+[moveit_cpp-7] [INFO] [1648262835.518073676] [moveit_cpp]:     - w = -0.084199
+
+
+TFTech:: RigidTransform tmp = TFTech::RigidTransform::fromMatrix(camToworld*result[i].transform.getMatrix());
+std::vector<TFTech::PickPoint> tmpPickPoints = pickPointObjects[j].getAllPickPointsInFrame(tmp, i, 1.0);
+// std::vector<TFTech::PickPoint> tmpPickPoints = pickPointObjects[j].getAllPickPointsInFrame(result[i].transform, i, 1.0);
+
+
+
+position:
+x = 0.256982
+y = -0.184284
+z = -0.166843
+orientation:
+x = -0.974141
+y = -0.213609
+z = -0.015074
+w = 0.072062

@@ -1,0 +1,129 @@
+{
+    "top_N_every_instance": 1,
+    "strategies": [
+        {
+            "type": "BY_PRIORITY"
+        },
+        {
+            "type": "BY_POSITION_ALONG_TARGET_FRAME_AXIS",
+            "axis_of_target_frame": "Z_AXIS",
+            "order": "HIGHEST",
+            "difference_threshold": 10
+        },
+        {
+            "type": "BY_ORIENTATION_DIFFERENCE_OF_TOOL_TO_PICK_POINT",
+            "order": "LOWEST",
+            "boundary_in_x_dir": 80,
+            "boundary_in_y_dir": 120,
+            "tool_initial_pose": [ 1,  0,  0,  400,
+                                   0, -1,  0,  400,
+                                   0,  0, -1, 2000,
+                                   0,  0,  0,    1],
+            "bin_pose": [ 1, 0, 0, 220,
+                          0, 1, 0, 270,
+                          0, 0, 1,   0,
+                          0, 0, 0,   1],
+            "difference_threshold": 0.1
+
+        },
+        {
+            "type": "BY_ANGLE_TO_POINT",
+            "axis_of_pick_point": "Z_AXIS",
+            "view_point": [220, 270, 600],
+            "order": "LOWEST",
+            "difference_threshold": 0.01,
+            "angle_bound": 45
+        },
+        {
+            "type": "BY_ANGLE_TO_BIN_SIDES",
+            "axis_of_pick_point": "X_AXIS",
+            "order": "LOWEST",
+            "bin_pose": [ 1, 0, 0, 220,
+                          0, 1, 0, 270,
+                          0, 0, 1,   0,
+                          0, 0, 0,   1],
+            "boundary_in_x_dir": 220,
+            "boundary_in_y_dir": 270,
+            "boundary_threshold_in_x_dir": 80,
+            "boundary_threshold_in_y_dir": 120,
+            "difference_threshold": 0.1
+        },
+        {
+            "type": "BY_DISTANCE_TO_POINT",
+            "point_in_target_frame": [220, 270, 1000],
+            "order": "LOWEST",
+            "difference_threshold": 1,
+            "distance_bound": 2000
+        }
+    ],
+    "example_strategy": [
+        {
+            "type": "BY_PRIORITY"
+        },
+        {
+            "type": "BY_POSITION_ALONG_TARGET_FRAME_AXIS",
+            "axis_of_target_frame": "Z_AXIS",
+            "order": "HIGHEST",
+            "difference_threshold": 20
+        },
+        {
+            "type": "BY_ANGLE_TO_AXIS",
+            "axis_of_pick_point": "Z_AXIS",
+            "axis": [0,0,1],
+            "order": "HIGHEST",
+            "difference_threshold": 5,
+            "angle_bound":  120
+        },
+        {
+            "type": "BY_ANGLE_TO_POINT",
+            "axis_of_pick_point": "Z_AXIS",
+            "view_point": [220, 270, 600],
+            "order": "LOWEST",
+            "difference_threshold": 1.0,
+            "angle_bound": 45
+        },
+        {
+            "type": "BY_DISTANCE_TO_POINT",
+            "point_in_target_frame": [220, 270, 1000],
+            "order": "LOWEST",
+            "difference_threshold": 1,
+            "distance_bound": 2000
+        },
+        {
+            "type": "BY_POSITION_ALONG_TARGET_FRAME_AXIS",
+            "axis_of_target_frame": "X_AXIS",
+            "difference_threshold": 20,
+            "order": "HIGHEST"
+        },
+        {
+            "type": "BY_POSITION_ALONG_TARGET_FRAME_AXIS",
+            "axis_of_target_frame": "Y_AXIS",
+            "difference_threshold": 20,
+            "order": "HIGHEST"
+        },
+        {
+            "type": "BY_ANGLE_TO_BIN_SIDES",
+            "order": "LOWEST",
+            "bin_pose": [ 1, 0, 0, 220,
+                          0, 1, 0, 270,
+                          0, 0, 1,   0,
+                          0, 0, 0,   1],
+            "boundary_in_x_dir": 220,
+            "boundary_in_y_dir": 270,
+            "difference_threshold": 5
+
+        },
+        {
+            "type": "BY_ORIENTATION_DIFFERENCE_OF_TOOL_TO_PICK_POINT",
+            "order": "LOWEST",
+            "boundary_in_x_dir": 80,
+            "boundary_in_y_dir": 120,
+            "tool_initial_pose": [ 1,  0,  0,  400,
+                                   0, -1,  0,  400,
+                                   0,  0, -1, 2000,
+                                   0,  0,  0,    1],
+            "difference_threshold": 5
+
+        }
+    ]
+}

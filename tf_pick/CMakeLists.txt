@@ -127,6 +127,10 @@ add_executable(plan_and_grasp src/plan_and_grasp.cpp)
 ament_target_dependencies(plan_and_grasp ros2_data ${THIS_PACKAGE_INCLUDE_DEPENDS})
 install(TARGETS plan_and_grasp DESTINATION lib/${PROJECT_NAME})
 
+add_executable(robot_pose_print src/robot_pose_print.cpp)
+ament_target_dependencies(robot_pose_print ${THIS_PACKAGE_INCLUDE_DEPENDS})
+install(TARGETS robot_pose_print DESTINATION lib/${PROJECT_NAME})
+
 
 # find_package(Glog REQUIRED)
 # include_directories(${GLOG_INCLUDE_DIR})

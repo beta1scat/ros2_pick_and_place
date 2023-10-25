@@ -45,7 +45,7 @@ public:
 		else
 			publisher_ = this->create_publisher<geometry_msgs::msg::Pose>("robot_pose", 1);
 		timer_ = this->create_wall_timer(
-			50ms, std::bind(&RobotPosePublisher::timer_callback, this));
+			500ms, std::bind(&RobotPosePublisher::timer_callback, this));
 	}
 
 private:

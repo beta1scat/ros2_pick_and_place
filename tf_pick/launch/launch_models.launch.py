@@ -13,7 +13,7 @@ def launch_setup(context, *args, **kwargs):
     for model in range(int(model_num_min), int(model_num_max)):
         load_models += [
             ExecuteProcess(
-                cmd=["ros2 run gazebo_ros spawn_entity.py -entity {} -database wood_cube_5cm -x 0.3 -y -0.25 -z 1.4".format(str(model))],
+                cmd=["ros2 run gazebo_ros spawn_entity.py -entity {} -database cube -x 0.35 -y -0.3 -z 0.5".format(str(model))],
                 shell=True,
                 output="screen"
             )

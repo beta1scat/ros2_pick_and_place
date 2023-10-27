@@ -110,7 +110,7 @@ public:
         this->subscription_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
         "/RGBD_camera/points", 1, std::bind(&MinimalSubscriber::topic_callback, this, std::placeholders::_1));
 
-        this->publisher_ = this->create_publisher<geometry_msgs::msg::PoseArray>("pick_poses", 1);
+        this->publisher_ = this->create_publisher<geometry_msgs::msg::PoseArray>("/model_poses", 1);
         this->MaxResultsNum = maxResultsNum;
     }
 
@@ -131,6 +131,7 @@ private:
         // Debug object construct
         // WriteObjectModel3d(hModelTuple, "ply", "/root/Downloads/scene_halcon.ply", nullGenParamName, nullGenParamValue);
         geometry_msgs::msg::PoseArray poseList;
+        poseList.header.frame_id = "camera_link";
         try {
             surfaceMatchingHalcon(modelPath, hModelTuple, poseList, MaxResultsNum);
         } catch(HalconCpp::HException &except) {

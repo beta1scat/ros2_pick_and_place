@@ -8,6 +8,8 @@
 
 #include <Eigen/Dense>
 
+#include <chrono>
+
 // All source files that use ROS logging should define a file-specific
 // static const rclcpp::Logger named LOGGER, located at the top of the file
 // and inside the namespace with the narrowest scope (if there is one)
@@ -92,15 +94,61 @@ public:
 
     PlanAndGrasp() : Node("plan_and_grasp", rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true)) {
         this->subscription_ = this->create_subscription<geometry_msgs::msg::PoseArray>(
-            "/pick_poses", 10, std::bind(&PlanAndGrasp::topic_callback, this, std::placeholders::_1));
+            "/model_poses", 10, std::bind(&PlanAndGrasp::topic_callback, this, std::placeholders::_1));
         this->publisher_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
             "/egp64_finger_controller/commands", 10);
         this->client_ptr_ = rclcpp_action::create_client<MoveXYZW>(this, "/MoveXYZW");
+        this->pick_poses_publisher_ = this->create_publisher<geometry_msgs::msg::PoseArray>("/pick_poses", 1);
+        refPose_.rotate(Eigen::AngleAxisd(180 * k, Eigen::Vector3d::UnitY()) * Eigen::AngleAxisd( 0 * k, Eigen::Vector3d::UnitZ()));
+        // refPose_.rotate(Eigen::AngleAxisd( 90 * k, Eigen::Vector3d::UnitZ()));
+        refPose_.pretranslate(Eigen::Vector3d(0.35, -0.3, 1));
+        gripper_cmd(-10);
     }
 
+    void send_pick_pose(Eigen::Matrix4d targetPose) {
+        auto tool0Pose = targetPose * (toolInEnd.inverse());
+        std::cout << "refPose in world:\n" << refPose_.matrix() << std::endl;
+        std::cout << "targetPose in world:\n" << targetPose << std::endl;
+        std::cout << "tool0Pose in world:\n" << tool0Pose << std::endl;
+        Eigen::Matrix3d rot = tool0Pose.block(0,0,3,3);
+        Eigen::Vector3d trans = tool0Pose.block(0,3,3,1);
+        Eigen::Vector3d rot_RPY = rot.eulerAngles(2,1,0);
+        Eigen::Quaterniond qPP(rot);
+        auto goal_msg = MoveXYZW::Goal();
+        goal_msg.positionx = trans[0];
+        goal_msg.positiony = trans[1];
+        goal_msg.positionz = trans[2];
+        goal_msg.yaw = rot_RPY[2] / k;
+        goal_msg.pitch = rot_RPY[1] / k;
+        goal_msg.roll = rot_RPY[0] / k;
+        std::cout << "goal_msg.positionx:\n" << trans[0] << std::endl;
+        std::cout << "goal_msg.positiony:\n" << trans[1] << std::endl;
+        std::cout << "goal_msg.positionz:\n" << trans[2] << std::endl;
+        std::cout << "goal_msg.yaw:\n" << rot_RPY[2] / k << std::endl;
+        std::cout << "goal_msg.pitch:\n" << rot_RPY[1] / k << std::endl;
+        std::cout << "goal_msg.roll:\n" << rot_RPY[0] / k << std::endl;
+        auto send_goal_options = rclcpp_action::Client<MoveXYZW>::SendGoalOptions();
+        using namespace std::placeholders;
+        send_goal_options.goal_response_callback = std::bind(&PlanAndGrasp::goal_response_callback, this, _1);
+        send_goal_options.feedback_callback = std::bind(&PlanAndGrasp::feedback_callback, this, _1, _2);
+        send_goal_options.result_callback = std::bind(&PlanAndGrasp::result_callback, this, _1);
+        auto goal_handle_future = this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
+        geometry_msgs::msg::PoseArray poseList;
+        poseList.header.frame_id = "base_link";
+        geometry_msgs::msg::Pose tmpPose;
+        tmpPose.position.x = trans[0];
+        tmpPose.position.y = trans[1];
+        tmpPose.position.z = trans[2];
+        tmpPose.orientation.w = qPP.w();
+        tmpPose.orientation.x = qPP.x();
+        tmpPose.orientation.y = qPP.y();
+        tmpPose.orientation.z = qPP.z();
+        poseList.poses.push_back(tmpPose);
+        pick_poses_publisher_->publish(poseList);
+    }
     void topic_callback(const geometry_msgs::msg::PoseArray::SharedPtr msg) {
         RCLCPP_INFO(this->get_logger(), "Received pick poses");
-        gripper_cmd(-5);
+        gripper_cmd(-10);
         for (int i = 0; i < msg->poses.size(); i++) {
             RCLCPP_INFO(LOGGER, "pose in camera %d:", i);
             RCLCPP_INFO(LOGGER, "  + position:");
@@ -128,48 +176,14 @@ public:
             // pickPoseInWorld.matrix() = camInWorld * pickPose.matrix() * toolInEnd.inverse();
             std::cout << "modelPoseInWorld in world:\n" << modelPoseInWorld.matrix() << std::endl;
             Eigen::Matrix4d modelPose = modelPoseInWorld.matrix();
-            Eigen::Isometry3d refPose = Eigen::Isometry3d::Identity();
-            refPose.rotate(Eigen::AngleAxisd(180 * k, Eigen::Vector3d::UnitY()));
-            refPose.pretranslate(Eigen::Vector3d(0.35, -0.3, 1));
             std::vector<Eigen::Matrix4d> cubePickPoses = getAllPickPoses(modelPose);
-            std::vector<Eigen::Matrix4d> resPickPoses;
-            filterPickPoses(cubePickPoses, refPose.matrix(), 1, resPickPoses);
-            for (auto targetPose : resPickPoses) {
-                auto tool0Pose = targetPose * (toolInEnd.inverse());
-                std::cout << "refPose in world:\n" << refPose.matrix() << std::endl;
-                std::cout << "targetPose in world:\n" << targetPose << std::endl;
-                std::cout << "tool0Pose in world:\n" << tool0Pose << std::endl;
-                Eigen::Matrix3d rot = tool0Pose.block(0,0,3,3);
-                Eigen::Vector3d trans = tool0Pose.block(0,3,3,1);
-                Eigen::Vector3d rot_RPY = rot.eulerAngles(2,1,0);
-                auto goal_msg = MoveXYZW::Goal();
-                goal_msg.positionx = trans[0];
-                goal_msg.positiony = trans[1];
-                goal_msg.positionz = trans[2];
-                goal_msg.yaw = rot_RPY[2] / k;
-                goal_msg.pitch = rot_RPY[1] / k;
-                goal_msg.roll = rot_RPY[0] / k;
-                std::cout << "goal_msg.positionx:\n" << trans[0] << std::endl;
-                std::cout << "goal_msg.positiony:\n" << trans[1] << std::endl;
-                std::cout << "goal_msg.positionz:\n" << trans[2] << std::endl;
-                std::cout << "goal_msg.yaw:\n" << rot_RPY[2] / k << std::endl;
-                std::cout << "goal_msg.pitch:\n" << rot_RPY[1] / k << std::endl;
-                std::cout << "goal_msg.roll:\n" << rot_RPY[0] / k << std::endl;
-                // goal_msg.positionx = 0.342157;
-                // goal_msg.positiony = -0.19;
-                // goal_msg.positionz = 0.18;
-                // goal_msg.yaw = 0;
-                // goal_msg.pitch = pi/k;
-                // goal_msg.roll = 0;
-                // goal_msg.speed = 1.0;
-                auto send_goal_options = rclcpp_action::Client<MoveXYZW>::SendGoalOptions();
-                using namespace std::placeholders;
-                send_goal_options.goal_response_callback = std::bind(&PlanAndGrasp::goal_response_callback, this, _1);
-                send_goal_options.feedback_callback = std::bind(&PlanAndGrasp::feedback_callback, this, _1, _2);
-                send_goal_options.result_callback = std::bind(&PlanAndGrasp::result_callback, this, _1);
-                auto goal_handle_future = this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
-            }
+            std::vector<Eigen::Matrix4d> resPickPosesTmp;
+            filterPickPoses(cubePickPoses, refPose_.matrix(), 1, resPickPosesTmp);
+            resPickPoses_.insert(resPickPoses_.end(), resPickPosesTmp.begin(), resPickPosesTmp.end());
         }
+        send_pick_pose(resPickPoses_.back());
+        resPickPoses_.pop_back();
+        RCLCPP_ERROR(this->get_logger(), "resPickPoses_.size(): %ld", resPickPoses_.size());
     }
 
     void goal_response_callback(const GoalHandleMoveXYZW::SharedPtr & goal_handle)
@@ -212,9 +226,18 @@ public:
         for (auto number : result.result->result) {
             ss << number << " ";
         }
-        RCLCPP_INFO(this->get_logger(), ss.str().c_str());
+        RCLCPP_INFO(this->get_logger(), "Switch results:");
         if (result.result->result == "MoveXYZW:SUCCESS") {
-            gripper_cmd(100);
+            gripper_cmd(10);
+        }
+        if(resPickPoses_.empty()) {
+            RCLCPP_INFO(this->get_logger(), "resPickPoses_.empty()");
+        }
+        if (!resPickPoses_.empty()) {
+            send_pick_pose(resPickPoses_.back());
+            resPickPoses_.pop_back();
+            RCLCPP_INFO(LOGGER, "Send Goal");
+            RCLCPP_INFO(LOGGER, "Remained pick poses: %ld", resPickPoses_.size());
         }
         // rclcpp::shutdown();
     }
@@ -227,7 +250,10 @@ public:
 private:
     rclcpp::Subscription<geometry_msgs::msg::PoseArray>::SharedPtr subscription_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr publisher_;
+    rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr pick_poses_publisher_;
     rclcpp_action::Client<MoveXYZW>::SharedPtr client_ptr_;
+    std::vector<Eigen::Matrix4d> resPickPoses_;
+    Eigen::Isometry3d refPose_ = Eigen::Isometry3d::Identity();
 };
 
 int main(int argc, char **argv) {
@@ -236,7 +262,7 @@ int main(int argc, char **argv) {
 		std::cout << "Parameter index =" << i << " ";
 		std::cout << "Parameter value =" << argv[i] << std::endl;
 	}
-    float num = 1;
+    float num = 0.2;
     if (argc <= 1) {
         std::cout<< "Please input tcf position at Z-Axis of robot end" << std::endl;
     } else {

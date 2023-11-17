@@ -149,6 +149,7 @@ public:
     void topic_callback(const geometry_msgs::msg::PoseArray::SharedPtr msg) {
         RCLCPP_INFO(this->get_logger(), "Received pick poses");
         gripper_cmd(-10);
+
         for (int i = 0; i < msg->poses.size(); i++) {
             RCLCPP_INFO(LOGGER, "pose in camera %d:", i);
             RCLCPP_INFO(LOGGER, "  + position:");
@@ -180,10 +181,12 @@ public:
             std::vector<Eigen::Matrix4d> resPickPosesTmp;
             filterPickPoses(cubePickPoses, refPose_.matrix(), 1, resPickPosesTmp);
             resPickPoses_.insert(resPickPoses_.end(), resPickPosesTmp.begin(), resPickPosesTmp.end());
+            for (auto pose : resPickPoses_) {
+                send_pick_pose(pose);
+            }
         }
-        send_pick_pose(resPickPoses_.back());
         resPickPoses_.pop_back();
-        RCLCPP_ERROR(this->get_logger(), "resPickPoses_.size(): %ld", resPickPoses_.size());
+        RCLCPP_INFO(this->get_logger(), "resPickPoses_.size(): %ld", resPickPoses_.size());
     }
 
     void goal_response_callback(const GoalHandleMoveXYZW::SharedPtr & goal_handle)
@@ -268,14 +271,54 @@ int main(int argc, char **argv) {
     } else {
         num = atof(argv[1]);
     }
-    camInWorld << 0, -1,  0,  0.35,
-                 -1,  0,  0, -0.3,
-                  0,  0, -1,  1.0,
-                  0,  0,  0,  1.0;
-    toolInEnd << 1, 0, 0,    0,
-                 0, 1, 0,    0,
-                 0, 0, 1, num,
-                 0, 0, 0,  1.0;
+    // camInWorld << 0, -1,  0,  0.35,
+    //              -1,  0,  0, -0.3,
+    //               0,  0, -1,  1.0,
+    //               0,  0,  0,  1.0;
+    // toolInEnd << 1, 0, 0,    0,
+    //              0, 1, 0,    0,
+    //              0, 0, 1, num,
+    //              0, 0, 0,  1.0;
+    /* Calibration data */
+    /* My Cali */
+    camInWorld <<   0.0005336, -0.99999976, -0.00044890,  350.60592642/1000,
+                  -0.99999978, -0.00053342, -0.00039977, -299.66957265/1000,
+                   0.00039953,  0.00044911, -0.99999982, 1000.33905455/1000,
+                            0,           0,           0,                1.0;
+    toolInEnd << 1, 0, 0,  -0.15920904/1000,
+                 0, 1, 0,  -0.19942082/1000,
+                 0, 0, 1, 199.77416816/1000,
+                 0, 0, 0, 1.0;
+    /* Sepreate cali */
+    // camInWorld << -0.00428262, -0.99998942, -0.00167799,  347.61120413/1000,
+    //               -0.99998175,  0.00427542,  0.00426759, -300.11672313/1000,
+    //               -0.00426037,  0.00169623, -0.99998949, 1002.82330435/1000,
+    //               0,  0,  0,  1.0;
+    // toolInEnd << 1, 0, 0,  0.07351394/1000,
+    //              0, 1, 0,  0.08250963/1000,
+    //              0, 0, 1, 200.14983843/1000,
+    //              0, 0, 0,  1.0;
+    /* Log: */
+    // T_BC_My_Cali: 
+    // [[   0.00046635   -0.99999959    0.00077444  349.73907475]
+    // [  -0.99999898   -0.0004674    -0.00135171 -300.95474919]
+    // [   0.00135207   -0.0007738    -0.99999879  999.9281822 ]
+    // [   0.            0.            0.            1.        ]]
+    // T_BC_HE: 
+    // [[  -0.00428262   -0.99998942   -0.00167799  347.61120413]
+    // [  -0.99998175    0.00427542    0.00426759 -300.11672313]
+    // [  -0.00426037    0.00169623   -0.99998949 1002.82330435]
+    // [   0.            0.            0.            1.        ]]
+    // T_ET_My_Cali: 
+    // [[  1.           0.           0.           0.06305446]
+    // [  0.           1.           0.           1.10307742]
+    // [  0.           0.           1.         200.11155968]
+    // [  0.           0.           0.           1.        ]]
+    // T_ET_Tool: 
+    // [[  1.           0.           0.           0.07351394]
+    // [  0.           1.           0.           0.08250963]
+    // [  0.           0.           1.         200.14983843]
+    // [  0.           0.           0.           1.        ]]
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<PlanAndGrasp>());
     rclcpp::shutdown();

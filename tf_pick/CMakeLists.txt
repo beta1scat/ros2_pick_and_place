@@ -113,19 +113,23 @@ install(DIRECTORY meshes DESTINATION share/${PROJECT_NAME})
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Convert native path into a cmake-style path with '/'
-file(TO_CMAKE_PATH "$ENV{HALCONEXAMPLES}" HALCONEXAMPLES)
-list(APPEND CMAKE_MODULE_PATH "${HALCONEXAMPLES}/cmake")
-include(UseHALCON)
-add_executable(sfm src/sfm.cpp)
-target_link_libraries( sfm HALCON::CppInt )
-ament_target_dependencies(sfm ${THIS_PACKAGE_INCLUDE_DEPENDS})
-install(TARGETS sfm DESTINATION lib/${PROJECT_NAME})
+# file(TO_CMAKE_PATH "$ENV{HALCONEXAMPLES}" HALCONEXAMPLES)
+# list(APPEND CMAKE_MODULE_PATH "${HALCONEXAMPLES}/cmake")
+# include(UseHALCON)
+# add_executable(sfm src/sfm.cpp)
+# target_link_libraries( sfm HALCON::CppInt )
+# ament_target_dependencies(sfm ${THIS_PACKAGE_INCLUDE_DEPENDS})
+# install(TARGETS sfm DESTINATION lib/${PROJECT_NAME})
 
 find_package(ros2_data REQUIRED)
 
 add_executable(plan_and_grasp src/plan_and_grasp.cpp)
 ament_target_dependencies(plan_and_grasp ros2_data ${THIS_PACKAGE_INCLUDE_DEPENDS})
 install(TARGETS plan_and_grasp DESTINATION lib/${PROJECT_NAME})
+
+add_executable(plan_by_file src/plan_by_file.cpp)
+ament_target_dependencies(plan_by_file ros2_data ${THIS_PACKAGE_INCLUDE_DEPENDS})
+install(TARGETS plan_by_file DESTINATION lib/${PROJECT_NAME})
 
 add_executable(robot_pose_print src/robot_pose_print.cpp)
 ament_target_dependencies(robot_pose_print ${THIS_PACKAGE_INCLUDE_DEPENDS})

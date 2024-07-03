@@ -27,6 +27,7 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/StringBool.srv"
+  "action/StringAction.action"
 )
 
 ament_package()

@@ -123,6 +123,8 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(ros2_data REQUIRED)
 
+find_package(tf_msgs REQUIRED)
+
 add_executable(plan_and_grasp src/plan_and_grasp.cpp)
 ament_target_dependencies(plan_and_grasp ros2_data ${THIS_PACKAGE_INCLUDE_DEPENDS})
 install(TARGETS plan_and_grasp DESTINATION lib/${PROJECT_NAME})
@@ -130,6 +132,10 @@ install(TARGETS plan_and_grasp DESTINATION lib/${PROJECT_NAME})
 add_executable(plan_by_file src/plan_by_file.cpp)
 ament_target_dependencies(plan_by_file ros2_data ${THIS_PACKAGE_INCLUDE_DEPENDS})
 install(TARGETS plan_by_file DESTINATION lib/${PROJECT_NAME})
+
+add_executable(plan_by_srv src/plan_by_srv.cpp)
+ament_target_dependencies(plan_by_srv ros2_data tf_msgs ${THIS_PACKAGE_INCLUDE_DEPENDS})
+install(TARGETS plan_by_srv DESTINATION lib/${PROJECT_NAME})
 
 add_executable(robot_pose_print src/robot_pose_print.cpp)
 ament_target_dependencies(robot_pose_print ${THIS_PACKAGE_INCLUDE_DEPENDS})

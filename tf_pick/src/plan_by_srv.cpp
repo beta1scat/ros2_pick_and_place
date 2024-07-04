@@ -43,8 +43,11 @@
 #include <moveit/move_group_interface/move_group_interface_improved.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
-#include "ros2_data/action/move_xyzw.hpp"
-#include "tf_msgs/action/string_action.hpp"
+#include <ros2_data/action/move_xyzw.hpp>
+#include <tf_msgs/action/string_action.hpp>
+#include <geometry_msgs/msg/pose_array.hpp>
+#include <std_srvs/srv/empty.hpp>
+#include <std_msgs/msg/float64_multi_array.hpp>
 
 #include <Eigen/Dense>
 
@@ -63,6 +66,10 @@ const double k = pi / 180.0;
 
 // Declaration of GLOBAL VARIABLE --> ROBOT / END-EFFECTOR PARAMETER:
 std::string my_param = "none";
+Eigen::Isometry3d camInWorld = Eigen::Isometry3d::Identity();
+Eigen::Isometry3d toolInEnd = Eigen::Isometry3d::Identity();
+Eigen::Isometry3d placePose = Eigen::Isometry3d::Identity();
+Eigen::Isometry3d homePose = Eigen::Isometry3d::Identity();
 
 class ros2_RobotTrigger : public rclcpp::Node
 {
@@ -96,10 +103,16 @@ public:
             std::bind(&ActionServer::handle_goal, this, std::placeholders::_1, std::placeholders::_2),
             std::bind(&ActionServer::handle_cancel, this, std::placeholders::_1),
             std::bind(&ActionServer::handle_accepted, this, std::placeholders::_1));
+        this->clear_client_ =this->create_client<std_srvs::srv::Empty>("/clear_octomap");
+        this->pick_poses_publisher_ = this->create_publisher<geometry_msgs::msg::PoseArray>("/pick_poses", 1);
+        this->publisher_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("/egp64_finger_controller/commands", 10);
     }
 
 private:
     rclcpp_action::Server<StringAction>::SharedPtr action_server_;
+    rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr pick_poses_publisher_;
+    rclcpp::Client<std_srvs::srv::Empty>::SharedPtr clear_client_;
+    rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr publisher_;
 
     // Function that checks the goal received, and accepts it accordingly:
     rclcpp_action::GoalResponse handle_goal(
@@ -142,96 +155,137 @@ private:
     void execute(const std::shared_ptr<GoalHandle> goal_handle)
     {
         RCLCPP_INFO(this->get_logger(), "Starting PlanByFile motion to desired waypoint...");
-
         // Obtain input value (goal -- GoalPOSE):
         const auto goal = goal_handle->get_goal();
         std::cout << "Poses Path: " << goal->request <<std::endl;
         nlohmann::json poses = loadJson(goal->request);
         std::cout << poses[0] << std::endl;
-        // Quaternion (const Scalar &w, const Scalar &x, const Scalar &y, const Scalar &z)
-        Eigen::Quaterniond q(poses[0][3], poses[0][4], poses[0][5], poses[0][6]);
-        // RCLCPP_INFO(this->get_logger(), goal->request);
+        std::cout << poses.size() << std::endl;
+        int pickPosesNum = poses.size();
+        gripper_cmd(-10);
+        for (int pickIdx = 0; pickIdx < pickPosesNum; ++pickIdx) {
+            Eigen::Isometry3d pickPoseInCam = Eigen::Isometry3d::Identity();
+            pickPoseInCam.pretranslate(Eigen::Vector3d(poses[pickIdx][0], poses[pickIdx][1], poses[pickIdx][2]));
+            pickPoseInCam.rotate(Eigen::Quaterniond(poses[pickIdx][3], poses[pickIdx][4], poses[pickIdx][5], poses[pickIdx][6]));
+            std::cout << pickPoseInCam.matrix() << std::endl;
+            auto toolPoseInBase = camInWorld * pickPoseInCam;
+            publishPickPose(toolPoseInBase);
+            auto toolPose = toolPoseInBase * (toolInEnd.inverse());
+            Eigen::Isometry3d transZ = Eigen::Isometry3d::Identity();
+            transZ.pretranslate(Eigen::Vector3d(0, 0, -0.1));
+            auto pre_pick_point = toolPose * transZ;
+            std::cout<< pre_pick_point.matrix();
+            auto success = plan_target(pre_pick_point.matrix());
+            if(success) {
+                RCLCPP_INFO(this->get_logger(), "Plan to pre-pick pose succeeded!");
+                move_group_interface.move();
+                std::cout<< toolPose.matrix();
+                success = plan_target(toolPose.matrix());
+                if (success) {
+                    move_group_interface.move();
+                    gripper_cmd(10);
+                    success = plan_target(pre_pick_point.matrix());
+                    if (success) {
+                        RCLCPP_INFO(this->get_logger(), "Retreat to pre-pick pose succeeded!");
+                        move_group_interface.move();
+                        success = plan_target(placePose.matrix());
+                        if (success) {
+                            RCLCPP_INFO(this->get_logger(), "Plan to place pose succeeded!");
+                            move_group_interface.move();
+                            gripper_cmd(-10);
+                        }
+                        // RCLCPP_INFO(this->get_logger(), "Plan to place pose failed, return HOME!");
+                        gripper_cmd(-10);
+                        success = plan_target(homePose.matrix());
+                        if (success) {
+                            move_group_interface.move();
+                        } else {
+                            RCLCPP_INFO(this->get_logger(), "Return HOME Failed!");
+                        }
+                        break;
+                    } else {
+                        RCLCPP_INFO(this->get_logger(), "Retreat to pre-pick pose failed, return HOME!");
+                        gripper_cmd(-10);
+                        success = plan_target(homePose.matrix());
+                        if (success) {
+                            move_group_interface.move();
+                        } else {
+                            RCLCPP_INFO(this->get_logger(), "Return HOME Failed!");
+                        }
+                    }
+                } else {
+                    RCLCPP_INFO(this->get_logger(), "Plan to pick pose failed, return HOME!");
+                    gripper_cmd(-10);
+                    success = plan_target(homePose.matrix());
+                    if (success) {
+                        move_group_interface.move();
+                    } else {
+                        RCLCPP_INFO(this->get_logger(), "Return HOME Failed!");
+                    }
+                }
+            } else {
+                RCLCPP_INFO(this->get_logger(), "Plan to pre-pick pose failed!");
+            }
+        }
+    }
 
-        // // Obtain JOINT SPEED and apply it into MoveIt!2:
-        // auto SPEED = goal->speed;
-        // move_group_interface.setMaxVelocityScalingFactor(SPEED);
-        // move_group_interface.setMaxAccelerationScalingFactor(1.0);
+    bool plan_target(Eigen::Matrix4d target, bool isCleanOct=false) {
+        Eigen::Matrix3d rot = target.block(0,0,3,3);
+        Eigen::Vector3d trans = target.block(0,3,3,1);
+        // Obtain JOINT SPEED and apply it into MoveIt!2:
+        move_group_interface.setMaxVelocityScalingFactor(1.0);
+        move_group_interface.setMaxAccelerationScalingFactor(1.0);
+        // Joint model group:
+        const moveit::core::JointModelGroup* joint_model_group = move_group_interface.getCurrentState()->getJointModelGroup(my_param);
+        // Get CURRENT POSE:
+        auto current_pose = move_group_interface.getCurrentPose();
+        RCLCPP_INFO(this->get_logger(), "Current POSE before the new MoveXYZW was:");
+        RCLCPP_INFO(this->get_logger(), "POSITION -> (x = %.2f, y = %.2f, z = %.2f)", current_pose.pose.position.x, current_pose.pose.position.y,current_pose.pose.position.z);
+        RCLCPP_INFO(this->get_logger(), "ORIENTATION (quaternion) -> (x = %.2f, y = %.2f, z = %.2f, w = %.2f)", current_pose.pose.orientation.x, current_pose.pose.orientation.y,current_pose.pose.orientation.z,current_pose.pose.orientation.w);
+        // POSE-goal planning:
+        Eigen::Quaterniond qTP(rot);
+        geometry_msgs::msg::Pose target_pose;
+        target_pose.position.x = trans[0];
+        target_pose.position.y = trans[1];
+        target_pose.position.z = trans[2];
+        target_pose.orientation.x = qTP.x();
+        target_pose.orientation.y = qTP.y();
+        target_pose.orientation.z = qTP.z();
+        target_pose.orientation.w = qTP.w();
+        move_group_interface.setPoseTarget(target_pose);
+        RCLCPP_INFO(this->get_logger(), "Goal Position -> (x = %.2f, y = %.2f, z = %.2f)", trans[0], trans[1], trans[2]);
+        RCLCPP_INFO(this->get_logger(), "Goal ORIENTATION (quaternion) -> (x = %.2f, y = %.2f, z = %.2f, w = %.2f)", qTP.x(), qTP.y(), qTP.z(), qTP.w());
+        if (isCleanOct) {
+            auto request = std::make_shared<std_srvs::srv::Empty::Request>();
+            auto result = clear_client_->async_send_request(request);
+            RCLCPP_INFO(this->get_logger(), "clear octomap");
+        }
+        // Plan:
+        moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+        return (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    }
 
-        // // FEEDBACK?
-        // // No feedback needed for StringAction Action Calls.
-        // // No loop needed for StringAction Action Calls.
+    void gripper_cmd(int force){
+        std_msgs::msg::Float64MultiArray commands;
+        commands.data.push_back(force);
+        commands.data.push_back(force);
+        this->publisher_->publish(commands);
+    }
 
-        // // Declare RESULT:
-        // auto result = std::make_shared<StringAction::Result>();
-
-        // // Joint model group:
-        // const moveit::core::JointModelGroup *joint_model_group = move_group_interface.getCurrentState()->getJointModelGroup(my_param);
-
-        // // Get CURRENT POSE:
-        // auto current_pose = move_group_interface.getCurrentPose();
-        // RCLCPP_INFO(this->get_logger(), "Current POSE before the new StringAction was:");
-        // RCLCPP_INFO(this->get_logger(), "POSITION -> (x = %.2f, y = %.2f, z = %.2f)", current_pose.pose.position.x, current_pose.pose.position.y, current_pose.pose.position.z);
-        // RCLCPP_INFO(this->get_logger(), "ORIENTATION (quaternion) -> (x = %.2f, y = %.2f, z = %.2f, w = %.2f)", current_pose.pose.orientation.x, current_pose.pose.orientation.y, current_pose.pose.orientation.z, current_pose.pose.orientation.w);
-
-        // // EULER to QUATERNION CONVERSION:
-        // // double cy = cos(k*yaw * 0.5);
-        // // double sy = sin(k*yaw * 0.5);
-        // // double cp = cos(k*pitch * 0.5);
-        // // double sp = sin(k*pitch * 0.5);
-        // // double cr = cos(k*roll * 0.5);
-        // // double sr = sin(k*roll * 0.5);
-        // // double orientationX = sr * cp * cy - cr * sp * sy;
-        // // double orientationY = cr * sp * cy + sr * cp * sy;
-        // // double orientationZ = cr * cp * sy - sr * sp * cy;
-        // // double orientationW = cr * cp * cy + sr * sp * sy;
-
-        // Eigen::Quaterniond qTP(Eigen::AngleAxisd(roll * k, Eigen::Vector3d::UnitZ()) *
-        //                        Eigen::AngleAxisd(pitch * k, Eigen::Vector3d::UnitY()) *
-        //                        Eigen::AngleAxisd(yaw * k, Eigen::Vector3d::UnitX()));
-        // RCLCPP_INFO(this->get_logger(), "Goal Position -> (x = %.2f, y = %.2f, z = %.2f)", positionX, positionY, positionZ);
-        // RCLCPP_INFO(this->get_logger(), "Goal ORIENTATION (quaternion) -> (x = %.2f, y = %.2f, z = %.2f, w = %.2f)", qTP.x(), qTP.y(), qTP.z(), qTP.w());
-        // // POSE-goal planning:
-        // geometry_msgs::msg::Pose target_pose;
-        // target_pose.position.x = positionX;
-        // target_pose.position.y = positionY;
-        // target_pose.position.z = positionZ;
-        // target_pose.orientation.x = qTP.x();
-        // target_pose.orientation.y = qTP.y();
-        // target_pose.orientation.z = qTP.z();
-        // target_pose.orientation.w = qTP.w();
-        // move_group_interface.setPoseTarget(target_pose);
-        // // Plan, execute and inform (with feedback):
-        // moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-
-        // bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-        // if (success)
-        // {
-
-        //     RCLCPP_INFO(this->get_logger(), "%s - StringAction: Planning successful!", my_param.c_str());
-        //     move_group_interface.move();
-
-        //     // Do if GOAL CANCELLED:
-        //     if (goal_handle->is_canceling())
-        //     {
-        //         RCLCPP_INFO(this->get_logger(), "Goal canceled.");
-        //         result->result = "StringAction:CANCELED";
-        //         goal_handle->canceled(result);
-        //         return;
-        //     }
-        //     else
-        //     {
-        //         RCLCPP_INFO(this->get_logger(), "%s - StringAction: Movement executed!", my_param.c_str());
-        //         result->result = "StringAction:SUCCESS";
-        //         goal_handle->succeed(result);
-        //     }
-        // }
-        // else
-        // {
-        //     RCLCPP_INFO(this->get_logger(), "%s - StringAction: Planning failed!", my_param.c_str());
-        //     result->result = "StringAction:FAILED";
-        //     goal_handle->succeed(result);
-        // }
+    void publishPickPose(Eigen::Isometry3d pose){
+        geometry_msgs::msg::PoseArray poseList;
+        poseList.header.frame_id = "base_link";
+        geometry_msgs::msg::Pose tmpPose;
+        tmpPose.position.x = pose.translation()[0];
+        tmpPose.position.y = pose.translation()[1];
+        tmpPose.position.z = pose.translation()[2];
+        Eigen::Quaterniond q(pose.rotation());
+        tmpPose.orientation.w = q.w();
+        tmpPose.orientation.x = q.x();
+        tmpPose.orientation.y = q.y();
+        tmpPose.orientation.z = q.z();
+        poseList.poses.push_back(tmpPose);
+        this->pick_poses_publisher_->publish(poseList);
     }
 };
 
@@ -239,6 +293,18 @@ int main(int argc, char **argv)
 {
     // Initialise MAIN NODE:
     rclcpp::init(argc, argv);
+
+    camInWorld.pretranslate(Eigen::Vector3d(0.35, -0.3, 1));
+    camInWorld.rotate(Eigen::Quaterniond(0.0, 0.707, -0.707, 0.0));
+    toolInEnd.translate(Eigen::Vector3d(0.0, 0.0, 0.2));
+    placePose.pretranslate(Eigen::Vector3d(0.35, 0.3, 0.4));
+    placePose.rotate(Eigen::AngleAxisd(180 * k, Eigen::Vector3d::UnitY()));
+    homePose.pretranslate(Eigen::Vector3d(0.3, 0., 0.35));
+    homePose.rotate(Eigen::AngleAxisd(180 * k, Eigen::Vector3d::UnitY()));
+    std::cout << camInWorld.matrix() << std::endl;
+    std::cout << toolInEnd.matrix() << std::endl;
+    std::cout << placePose.matrix();
+    std::cout << homePose.matrix();
 
     // Obtain ros2_RobotTrigger parameter:
     auto node_PARAM = std::make_shared<ros2_RobotTrigger>();

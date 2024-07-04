@@ -290,7 +290,6 @@ public:
         RCLCPP_INFO(this->get_logger(), "Goal Position -> (x = %.2f, y = %.2f, z = %.2f)", trans[0], trans[1], trans[2]);
         RCLCPP_INFO(this->get_logger(), "Goal ORIENTATION (quaternion) -> (x = %.2f, y = %.2f, z = %.2f, w = %.2f)", qTP.x(), qTP.y(), qTP.z(), qTP.w());
         // Plan, execute and inform (with feedback):
-
         auto request = std::make_shared<std_srvs::srv::Empty::Request>();
         auto result = clear_client_->async_send_request(request);
         RCLCPP_INFO(this->get_logger(), "clear octomap");

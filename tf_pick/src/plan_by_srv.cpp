@@ -162,6 +162,10 @@ private:
         const auto goal = goal_handle->get_goal();
         std::cout << "Poses Path: " << goal->request <<std::endl;
         nlohmann::json poses = loadJson(goal->request);
+        if (poses.size() < 1) {
+            RCLCPP_INFO(this->get_logger(), "Poses file is empty...");
+            return;
+        }
         std::cout << poses[0] << std::endl;
         std::cout << poses.size() << std::endl;
         int pickPosesNum = poses.size();
@@ -181,35 +185,26 @@ private:
             auto success = plan_target(pre_pick_point.matrix());
             if(success) {
                 RCLCPP_INFO(this->get_logger(), "Plan to pre-pick pose succeeded!");
-                move_group_interface.move();
+                move_group_interface.execute(my_plan_);
+                // move_group_interface.move();
                 std::cout<< toolPose.matrix();
-                // moveit_msgs::msg::OrientationConstraint orientation_constraint;
-                // orientation_constraint.header.frame_id = move_group_interface.getPoseReferenceFrame();
-                // orientation_constraint.link_name = move_group_interface.getEndEffectorLink();
-                // auto current_pose = move_group_interface.getCurrentPose();
-                // orientation_constraint.orientation = current_pose.pose.orientation;
-                // orientation_constraint.absolute_x_axis_tolerance = 0.1;
-                // orientation_constraint.absolute_y_axis_tolerance = 0.1;
-                // orientation_constraint.absolute_z_axis_tolerance = 0.1;
-                // orientation_constraint.weight = 1.0;
-                // moveit_msgs::msg::Constraints orientation_constraints;
-                // orientation_constraints.orientation_constraints.emplace_back(orientation_constraint);
-                // move_group_interface.setPathConstraints(orientation_constraints);
                 success = plan_target(toolPose.matrix());
                 if (success) {
-                    move_group_interface.move();
+                    move_group_interface.execute(my_plan_);
+                    // move_group_interface.move();
                     gripper_cmd(10);
                     success = plan_target(pre_pick_point.matrix(), true);
-                    // move_group_interface.clearPathConstraints();
                     if (success) {
                         RCLCPP_INFO(this->get_logger(), "Retreat to pre-pick pose succeeded!");
                         clear_octo_data();
-                        move_group_interface.move();
+                        move_group_interface.execute(my_plan_);
+                        // move_group_interface.move();
                         success = plan_target(placePose.matrix(), true);
                         if (success) {
                             RCLCPP_INFO(this->get_logger(), "Plan to place pose succeeded!");
                             clear_octo_data();
-                            move_group_interface.move();
+                            move_group_interface.execute(my_plan_);
+                            // move_group_interface.move();
                             gripper_cmd(-10);
                         }
                         // RCLCPP_INFO(this->get_logger(), "Plan to place pose failed, return HOME!");
@@ -217,7 +212,8 @@ private:
                         success = plan_target(homePose.matrix(), true);
                         if (success) {
                             clear_octo_data();
-                            move_group_interface.move();
+                            move_group_interface.execute(my_plan_);
+                            // move_group_interface.move();
                         } else {
                             RCLCPP_INFO(this->get_logger(), "Return HOME Failed!");
                         }
@@ -228,7 +224,8 @@ private:
                         success = plan_target(homePose.matrix(), true);
                         if (success) {
                             clear_octo_data();
-                            move_group_interface.move();
+                            move_group_interface.execute(my_plan_);
+                            // move_group_interface.move();
                         } else {
                             RCLCPP_INFO(this->get_logger(), "Return HOME Failed!");
                         }
@@ -239,7 +236,8 @@ private:
                     success = plan_target(homePose.matrix(), true);
                     if (success) {
                         clear_octo_data();
-                        move_group_interface.move();
+                        move_group_interface.execute(my_plan_);
+                        // move_group_interface.move();
                     } else {
                         RCLCPP_INFO(this->get_logger(), "Return HOME Failed!");
                     }
@@ -247,6 +245,48 @@ private:
             } else {
                 RCLCPP_INFO(this->get_logger(), "Plan to pre-pick pose failed!");
             }
+            // Only plan pick and place
+            /* auto success = plan_target(toolPose.matrix());
+            if (success) {
+                RCLCPP_INFO(this->get_logger(), "Plan to pick pose succeeded!");
+                move_group_interface.move();
+                gripper_cmd(10);
+                success = plan_target(placePose.matrix(), true);
+                if (success) {
+                    RCLCPP_INFO(this->get_logger(), "Plan to place pose succeeded!");
+                    clear_octo_data();
+                    move_group_interface.move();
+                    gripper_cmd(-10);
+                    success = plan_target(homePose.matrix(), true);
+                    if (success) {
+                        clear_octo_data();
+                        move_group_interface.move();
+                    } else {
+                        RCLCPP_INFO(this->get_logger(), "Return HOME Failed!");
+                    }
+                    break;
+                } else {
+                    RCLCPP_INFO(this->get_logger(), "Plan to place pose failed, return HOME!");
+                    gripper_cmd(-10);
+                    success = plan_target(homePose.matrix(), true);
+                    if (success) {
+                        clear_octo_data();
+                        move_group_interface.move();
+                    } else {
+                        RCLCPP_INFO(this->get_logger(), "Return HOME Failed!");
+                    }
+                }
+            } else {
+                RCLCPP_INFO(this->get_logger(), "Plan to pick pose failed, return HOME!");
+                gripper_cmd(-10);
+                success = plan_target(homePose.matrix(), true);
+                if (success) {
+                    clear_octo_data();
+                    move_group_interface.move();
+                } else {
+                    RCLCPP_INFO(this->get_logger(), "Return HOME Failed!");
+                }
+            } */
         }
     }
 
@@ -319,7 +359,7 @@ int main(int argc, char **argv)
 
     camInWorld.pretranslate(Eigen::Vector3d(0.35, -0.3, 1));
     camInWorld.rotate(Eigen::Quaterniond(0.0, 0.707, -0.707, 0.0));
-    toolInEnd.translate(Eigen::Vector3d(0.0, 0.0, 0.2));
+    toolInEnd.translate(Eigen::Vector3d(0.0, 0.0, 0.18));
     placePose.pretranslate(Eigen::Vector3d(0.35, 0.3, 0.4));
     placePose.rotate(Eigen::AngleAxisd(180 * k, Eigen::Vector3d::UnitY()));
     homePose.pretranslate(Eigen::Vector3d(0.3, 0., 0.35));

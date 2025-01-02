@@ -39,6 +39,21 @@ models = [
     "YCB_softball",
     "YCB_tuna_can",
 ]
+
+# For shape fit paper
+models10 = [
+    "YCB_apple",
+    "YCB_bowl",
+    "YCB_chips_can",
+    "YCB_golfball",
+    "YCB_pear_800",
+    "YCB_softball",
+    "bowl",
+    "coke_can",
+    "plastic_cup",
+    "hollow_cube_s10_t1cm",
+]
+
 def get_random_model():
     return random.choice(models)
 
@@ -53,10 +68,20 @@ def launch_setup(context, *args, **kwargs):
         return []
     print(model_num_min)
     print(model_num_max)
-    for i in range(model_num_min, model_num_max):
+    # for i in range(model_num_min, model_num_max):
+    #     load_models += [
+    #     ExecuteProcess(
+    #         cmd=[f"ros2 run gazebo_ros spawn_entity.py -entity {models[i] + '_' + str(random.randint(0, 9))} -database '{models[i]}' -x 0.35 -y -0.3 -z 0.5"],
+    #         shell=True,
+    #         output="screen"
+    #     )
+    # ]
+
+    # For shape fit paper
+    for i in range(10):
         load_models += [
         ExecuteProcess(
-            cmd=[f"ros2 run gazebo_ros spawn_entity.py -entity {models[i] + '_' + str(random.randint(0, 9))} -database '{models[i]}' -x 0.35 -y 0.3 -z 0.5"],
+            cmd=[f"ros2 run gazebo_ros spawn_entity.py -entity {models10[i] + '_' + str(random.randint(0, 9))} -database '{models10[i]}' -x 0.35 -y -0.3 -z 0.1"],
             shell=True,
             output="screen"
         )

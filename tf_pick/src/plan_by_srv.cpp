@@ -112,6 +112,9 @@ public:
 private:
     // Plan:
     moveit::planning_interface::MoveGroupInterface::Plan my_plan_;
+    moveit::planning_interface::MoveGroupInterface::Plan pre_pick_plan_;
+    moveit::planning_interface::MoveGroupInterface::Plan pick_plan_;
+    moveit::planning_interface::MoveGroupInterface::Plan place_plan_;
     rclcpp_action::Server<StringAction>::SharedPtr action_server_;
     rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr pick_poses_publisher_;
     rclcpp::Client<std_srvs::srv::Empty>::SharedPtr clear_client_;
@@ -199,25 +202,41 @@ private:
                         clear_octo_data();
                         move_group_interface.execute(my_plan_);
                         // move_group_interface.move();
-                        success = plan_target(placePose.matrix(), true);
-                        if (success) {
-                            RCLCPP_INFO(this->get_logger(), "Plan to place pose succeeded!");
-                            clear_octo_data();
-                            move_group_interface.execute(my_plan_);
-                            // move_group_interface.move();
-                            gripper_cmd(-10);
-                        }
-                        // RCLCPP_INFO(this->get_logger(), "Plan to place pose failed, return HOME!");
-                        gripper_cmd(-10);
                         success = plan_target(homePose.matrix(), true);
                         if (success) {
                             clear_octo_data();
                             move_group_interface.execute(my_plan_);
-                            // move_group_interface.move();
+                            success = plan_target(placePose.matrix(), true);
+                            if (success) {
+                                RCLCPP_INFO(this->get_logger(), "Plan to place pose succeeded!");
+                                clear_octo_data();
+                                move_group_interface.execute(my_plan_);
+                                // move_group_interface.move();
+                                gripper_cmd(-10);
+                            }
+                            // RCLCPP_INFO(this->get_logger(), "Plan to place pose failed, return HOME!");
+                            gripper_cmd(-10);
+                            success = plan_target(homePose.matrix(), true);
+                            if (success) {
+                                clear_octo_data();
+                                move_group_interface.execute(my_plan_);
+                                // move_group_interface.move();
+                            } else {
+                                RCLCPP_INFO(this->get_logger(), "Return HOME Failed!");
+                            }
+                            break;
                         } else {
                             RCLCPP_INFO(this->get_logger(), "Return HOME Failed!");
+                            gripper_cmd(-10);
+                            success = plan_target(homePose.matrix(), true);
+                            if (success) {
+                                clear_octo_data();
+                                move_group_interface.execute(my_plan_);
+                                // move_group_interface.move();
+                            } else {
+                                RCLCPP_INFO(this->get_logger(), "Return HOME Failed!");
+                            }
                         }
-                        break;
                     } else {
                         RCLCPP_INFO(this->get_logger(), "Retreat to pre-pick pose failed, return HOME!");
                         gripper_cmd(-10);
@@ -362,7 +381,7 @@ int main(int argc, char **argv)
     toolInEnd.translate(Eigen::Vector3d(0.0, 0.0, 0.18));
     placePose.pretranslate(Eigen::Vector3d(0.35, 0.3, 0.4));
     placePose.rotate(Eigen::AngleAxisd(180 * k, Eigen::Vector3d::UnitY()));
-    homePose.pretranslate(Eigen::Vector3d(0.3, 0., 0.35));
+    homePose.pretranslate(Eigen::Vector3d(0.3, 0., 0.55));
     homePose.rotate(Eigen::AngleAxisd(180 * k, Eigen::Vector3d::UnitY()));
     std::cout << camInWorld.matrix() << std::endl;
     std::cout << toolInEnd.matrix() << std::endl;
